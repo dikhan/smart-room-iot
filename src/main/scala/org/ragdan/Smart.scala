@@ -58,9 +58,8 @@ object Smart extends App {
 
       if (!isRoomOccupied && roomStatus == "free") {
         println("trigger green light on smart bulb")
-        HueApi.updateLight(state = State.red)
-      }
-      else if (isRoomOccupied && roomStatus == "free") {
+        HueApi.updateLight(state = State.green)
+      } else if (isRoomOccupied && roomStatus == "free") {
         println("trigger amber light on smart bulb")
         HueApi.updateLight(state = State.yellow)
       } else if (!isRoomOccupied && roomStatus != "free") {
