@@ -16,10 +16,7 @@ object Smart extends App {
   val LON07_ALTO = "CONF_46608@cisco.com"
   val LON07_BOARDROOM = "CONF_37445@cisco.com"
 
-  print("enter password: ")
-  val password = new String(System.console().readPassword())
-
-  Exchange.setPassword(password)
+  val exchange = createExchange
 
   // initialize with motion not detected
   (1 to 5).foreach { x =>
@@ -54,7 +51,7 @@ object Smart extends App {
   val controlLightRunnable = new Runnable() {
     def run() = {
       val isRoomOccupied = m.getSnapshot.getValues.contains(MOTION_DETECTED)
-      val roomStatus = Exchange.isRoomAvailable(LON07_ALTO)
+      val roomStatus = exchange.isRoomAvailable(LON07_ALTO)
 
       if (!isRoomOccupied && roomStatus == "free") {
         println("trigger green light on smart bulb")
@@ -74,5 +71,15 @@ object Smart extends App {
 
   val executor = Executors.newSingleThreadScheduledExecutor()
   executor.scheduleAtFixedRate(controlLightRunnable, 5, 5, TimeUnit.SECONDS)
+
+  def createExchange:Exchange = {
+    print("enter user: ")
+    val user = new String(System.console().readLine())
+
+    print("enter password: ")
+    val password = new String(System.console().readPassword())
+
+    new Exchange(user, password)
+  }
 
 }

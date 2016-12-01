@@ -6,11 +6,7 @@ import org.joda.time.DateTime
 
 import scala.sys.process._
 
-object Exchange {
-    var password = ""
-
-    def setPassword(password: String) = this.password = password
-
+class Exchange(user:String, password: String) {
 
     val exchangeEndPoint = "https://mail.cisco.com/ews/exchange.asmx"
     val bias = 0
@@ -24,7 +20,7 @@ object Exchange {
         val endString = end.toString
 
 
-        var xml = io.Source.fromInputStream(getClass.getResourceAsStream("getavailability_template.xml")).mkString
+        var xml = io.Source.fromFile("src/main/resources/getavailability_template.xml").mkString
         xml = xml.replace("$bias", s"$bias")
           .replace("$room", room)
           .replace("$start", startString)
@@ -37,7 +33,7 @@ object Exchange {
         }
 
 
-        val stdout = s"bash get_room.sh $password".!!
+        val stdout = s"bash get_room.sh $user $password".!!
 //        println(stdout)
 
         val pattern = "MergedFreeBusy.*?>\\d{2}".r
