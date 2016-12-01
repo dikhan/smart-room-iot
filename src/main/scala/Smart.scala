@@ -7,12 +7,21 @@ object Smart extends App {
     val m = new SlidingWindowReservoir(5)
     val port = 5006
 
+    val MOTION_DETECTED = 1
+    val MOTION_NOT_DETECTED = 0
+
+    val LON07_ALTO = "CONF_46608@cisco.com"
+    val LON07_BOARDROOM = "CONF_37445@cisco.com"
+
+    print("enter password: ")
+    val password = new String(System.console().readPassword())
+
+    Exchange.setPassword(password)
+
     // initialize with motion not detected
-    m.update(0)
-    m.update(0)
-    m.update(0)
-    m.update(0)
-    m.update(0)
+    (1 to 5).foreach{ x =>
+        m.update(MOTION_NOT_DETECTED)
+    }
 
 
     val udpListener = new Thread(new Runnable() {
@@ -29,9 +38,9 @@ object Smart extends App {
                 val s = new String(data, 0, udpPacket.getLength)
 
                 if (s == "motion detected") {
-                    m.update(1)
+                    m.update(MOTION_DETECTED)
                 } else {
-                    m.update(0)
+                    m.update(MOTION_NOT_DETECTED)
                 }
             }
         }
@@ -41,10 +50,16 @@ object Smart extends App {
 
     val controlLightRunnable = new Runnable() {
         def run() = {
-//            println(m.getSnapshot.getValues.toList)
-            val motionDetected = m.getSnapshot.getValues.contains(1)
-            if (motionDetected)
+            //            println(m.getSnapshot.getValues.toList)
+            val motionDetected = m.getSnapshot.getValues.contains(MOTION_DETECTED)
+            val roomStatus = Exchange.isRoomAvailable(LON07_ALTO)
+
+            if (!motionDetected && roomStatus == "free")
                 println("trigger green light on smart bulb")
+            else if (motionDetected && roomStatus == "free")
+                println("trigger amber light on smart bulb")
+            else if (!motionDetected && roomStatus != "free")
+                println("trigger amber light on smart bulb")
             else
                 println("trigger red light on smart bulb")
         }
