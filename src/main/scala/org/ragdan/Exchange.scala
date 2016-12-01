@@ -1,9 +1,10 @@
+package org.ragdan
+
 import java.io.PrintWriter
 
-import org.dom4j.{Document, DocumentHelper}
 import org.joda.time.DateTime
 
-import sys.process._
+import scala.sys.process._
 
 object Exchange {
     var password = ""
