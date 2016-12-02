@@ -16,15 +16,12 @@ object SmartRoom extends App {
 
     val CHECK_INTERVAL = 15
 
-    val LON07_ALTO = ("alto", "CONF_46608@cisco.com")
-    val LON07_BOARDROOM = ("boardroom", "CONF_37445@cisco.com")
-
 
     println(s"motion update service running at $udpPort")
     println(s"room booking service running at $bookingServicePort")
 
-    val room = obtainRoom
-    println(s"using room $room")
+    val chosenRoom = obtainRoom
+    println(s"using room: $chosenRoom")
     val exchange = createExchangeApi
 
     // initialize with motion not detected
@@ -33,13 +30,14 @@ object SmartRoom extends App {
     }
 
 
-    def obtainRoom: String = {
-        print("enter room: ")
+    def obtainRoom: Room = {
+        print("enter room (name,email): ")
         new String(System.console().readLine()) match {
-            case x if !x.isEmpty => x
-            case _ =>
-                println(s"returning default room: ${LON07_ALTO._1}")
-                LON07_ALTO._2
+            case x if !x.isEmpty =>
+                x.split(",") match {
+                    case Array(name, roomName) => Room(name, roomName)
+                }
+            case _ => Rooms.LON07_ALTO
         }
     }
 
@@ -71,7 +69,7 @@ object SmartRoom extends App {
         def run() = {
             val isRoomOccupied = m.getSnapshot.getValues.contains(MOTION_DETECTED)
             println("room occupied: " + isRoomOccupied)
-            val roomStatus = exchange.isRoomAvailable(room)
+            val roomStatus = exchange.isRoomAvailable(chosenRoom)
             println("exchange room status: " + roomStatus)
 
 
