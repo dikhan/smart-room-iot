@@ -1,4 +1,4 @@
-package org.ragdan
+package smartroom
 
 import java.io.PrintWriter
 
@@ -6,7 +6,7 @@ import org.joda.time.DateTime
 
 import scala.sys.process._
 
-class Exchange(user:String, password: String) {
+class ExchangeApi(user:String, password: String) {
 
     val exchangeEndPoint = "https://mail.cisco.com/ews/exchange.asmx"
     val bias = 0
