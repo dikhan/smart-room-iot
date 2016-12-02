@@ -1,6 +1,7 @@
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 import time
 from socket import  *
+from sys import *
 
 def notify_subscriber(p):
   #sock = socket.socket(socket.AF_NET, socket.SOCK_DGRAM)
@@ -14,7 +15,11 @@ PIR_SENSOR_PIN=7
 GPIO.setup(PIR_SENSOR_PIN, GPIO.IN)
 
 # subscriber
-host="192.168.1.100"
+if len(argv) > 1:
+  host = argv[1]
+else:
+  host="192.168.1.100"
+print host
 port=5006
 
 TIME_TO_SLEEP=1
