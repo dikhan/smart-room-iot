@@ -8,19 +8,20 @@ import com.codahale.metrics.SlidingWindowReservoir
 object SmartRoom extends App {
 
     val m = new SlidingWindowReservoir(30)
-    val port = 5006
+    val udpPort = 5006
+    val bookingServicePort = 9000
 
     val MOTION_DETECTED = 1
     val MOTION_NOT_DETECTED = 0
 
     val CHECK_INTERVAL = 15
 
-    val LON07_ALTO = ("alto", "CONF_46608@cisco.com")
-    val LON07_BOARDROOM = ("boardroom", "CONF_37445@cisco.com")
 
+    println(s"motion update service running at $udpPort")
+    println(s"room booking service running at $bookingServicePort")
 
-    val room = obtainRoom
-    println(s"using room $room")
+    val chosenRoom = obtainRoom
+    println(s"using room: $chosenRoom")
     val exchange = createExchangeApi
 
     // initialize with motion not detected
@@ -29,20 +30,21 @@ object SmartRoom extends App {
     }
 
 
-    def obtainRoom: String = {
-        print("enter room: ")
+    def obtainRoom: Room = {
+        print("enter room (name,email): ")
         new String(System.console().readLine()) match {
-            case x if !x.isEmpty => x
-            case _ =>
-                println(s"returning default room: ${LON07_ALTO._1}")
-                LON07_ALTO._2
+            case x if !x.isEmpty =>
+                x.split(",") match {
+                    case Array(name, roomName) => Room(name, roomName)
+                }
+            case _ => Rooms.LON07_ALTO
         }
     }
 
     val udpListener = new Thread(new Runnable() {
         def run() {
 
-            val udpServerSocket = new DatagramSocket(port)
+            val udpServerSocket = new DatagramSocket(udpPort)
 
             val buf = new Array[Byte](1000)
             val udpPacket = new DatagramPacket(buf, buf.length)
@@ -67,7 +69,7 @@ object SmartRoom extends App {
         def run() = {
             val isRoomOccupied = m.getSnapshot.getValues.contains(MOTION_DETECTED)
             println("room occupied: " + isRoomOccupied)
-            val roomStatus = exchange.isRoomAvailable(room)
+            val roomStatus = exchange.isRoomAvailable(chosenRoom)
             println("exchange room status: " + roomStatus)
 
 
@@ -89,6 +91,9 @@ object SmartRoom extends App {
 
     val executor = Executors.newSingleThreadScheduledExecutor()
     executor.scheduleAtFixedRate(controlLightRunnable, 5, CHECK_INTERVAL, TimeUnit.SECONDS)
+
+    // start room booking service
+    new ExchangeHttpService("0.0.0.0", bookingServicePort).start
 
     def createExchangeApi: ExchangeApi = {
         print("enter user: ")
