@@ -13,9 +13,9 @@ object HueApi {
   val token = "pBOzJTQATMmMsoT7bWelIwDI7SYQPtTSOW-UGYO8"
 
   def updateLight(lightId:String = "1", state: State) = {
+    println("turning state: " + state)
     val url = s"$endPoint/api/$token/lights/$lightId/state"
     var response = Http(url).put(write(state)).header("content-type", "application/json").asString
-    println(response)
   }
 
 }
