@@ -1,4 +1,4 @@
-package org.ragdan
+package smartroom
 
 import org.json4s.DefaultFormats
 import org.json4s.native.Serialization.write

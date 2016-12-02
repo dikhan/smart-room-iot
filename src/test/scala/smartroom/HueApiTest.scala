@@ -1,4 +1,4 @@
-package org.ragdan
+package smartroom
 
 object HueApiTest extends App {
 

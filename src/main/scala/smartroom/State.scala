@@ -1,4 +1,4 @@
-package org.ragdan
+package smartroom
 
 case class State(on: Boolean, bri: Int, hue: Int, sat: Int, effect: String, xy: Array[Float], ct: Int, alert: String)
 
