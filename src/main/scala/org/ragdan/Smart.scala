@@ -7,11 +7,13 @@ import com.codahale.metrics.SlidingWindowReservoir
 
 object Smart extends App {
 
-  val m = new SlidingWindowReservoir(5)
+  val m = new SlidingWindowReservoir(30)
   val port = 5006
 
   val MOTION_DETECTED = 1
   val MOTION_NOT_DETECTED = 0
+
+  val CHECK_INTERVAL = 15
 
   val LON07_ALTO = "CONF_46608@cisco.com"
   val LON07_BOARDROOM = "CONF_37445@cisco.com"
@@ -51,7 +53,10 @@ object Smart extends App {
   val controlLightRunnable = new Runnable() {
     def run() = {
       val isRoomOccupied = m.getSnapshot.getValues.contains(MOTION_DETECTED)
+      println("room occupied: " + isRoomOccupied)
       val roomStatus = exchange.isRoomAvailable(LON07_ALTO)
+      println("room status: " + roomStatus)
+
 
       if (!isRoomOccupied && roomStatus == "free") {
         println("trigger green light on smart bulb")
@@ -70,7 +75,7 @@ object Smart extends App {
   }
 
   val executor = Executors.newSingleThreadScheduledExecutor()
-  executor.scheduleAtFixedRate(controlLightRunnable, 5, 5, TimeUnit.SECONDS)
+  executor.scheduleAtFixedRate(controlLightRunnable, 5, CHECK_INTERVAL, TimeUnit.SECONDS)
 
   def createExchange:Exchange = {
     print("enter user: ")
