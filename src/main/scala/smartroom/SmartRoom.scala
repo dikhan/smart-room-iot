@@ -8,7 +8,8 @@ import com.codahale.metrics.SlidingWindowReservoir
 object SmartRoom extends App {
 
     val m = new SlidingWindowReservoir(30)
-    val port = 5006
+    val udpPort = 5006
+    val bookingServicePort = 9000
 
     val MOTION_DETECTED = 1
     val MOTION_NOT_DETECTED = 0
@@ -18,6 +19,9 @@ object SmartRoom extends App {
     val LON07_ALTO = ("alto", "CONF_46608@cisco.com")
     val LON07_BOARDROOM = ("boardroom", "CONF_37445@cisco.com")
 
+
+    println(s"motion update service running at $udpPort")
+    println(s"room booking service running at $bookingServicePort")
 
     val room = obtainRoom
     println(s"using room $room")
@@ -42,7 +46,7 @@ object SmartRoom extends App {
     val udpListener = new Thread(new Runnable() {
         def run() {
 
-            val udpServerSocket = new DatagramSocket(port)
+            val udpServerSocket = new DatagramSocket(udpPort)
 
             val buf = new Array[Byte](1000)
             val udpPacket = new DatagramPacket(buf, buf.length)
@@ -89,6 +93,9 @@ object SmartRoom extends App {
 
     val executor = Executors.newSingleThreadScheduledExecutor()
     executor.scheduleAtFixedRate(controlLightRunnable, 5, CHECK_INTERVAL, TimeUnit.SECONDS)
+
+    // start room booking service
+    new ExchangeHttpService("0.0.0.0", bookingServicePort).start
 
     def createExchangeApi: ExchangeApi = {
         print("enter user: ")
