@@ -1,6 +1,11 @@
 import RPi.GPIO as GPIO
 import time
-import socket
+from socket import  *
+
+def notify_subscriber(p):
+  #sock = socket.socket(socket.AF_NET, socket.SOCK_DGRAM)
+  sock = socket(AF_INET, SOCK_DGRAM)
+  sock.sendto(p, (host, port) )
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
@@ -9,8 +14,8 @@ PIR_SENSOR_PIN=7
 GPIO.setup(PIR_SENSOR_PIN, GPIO.IN)
 
 # subscriber
-host=localhost
-port=5005
+host="192.168.1.100"
+port=5006
 
 TIME_TO_SLEEP=1
 while True:
@@ -26,6 +31,4 @@ while True:
     print "Intruder detected"
     notify_subscriber("motion detected")
           
-def notify_subscriber(p):
-  sock = socket.socket(socket.AF_NET, socket.SOCK_DGRAM)
-  sock.sendto(p, (host, port) )
+
