@@ -43,22 +43,25 @@ object SmartRoom extends App {
 
     val udpListener = new Thread(new Runnable() {
         def run() {
+            try {
+                val udpServerSocket = new DatagramSocket(udpPort)
 
-            val udpServerSocket = new DatagramSocket(udpPort)
+                val buf = new Array[Byte](1000)
+                val udpPacket = new DatagramPacket(buf, buf.length)
 
-            val buf = new Array[Byte](1000)
-            val udpPacket = new DatagramPacket(buf, buf.length)
+                while (true) {
+                    udpServerSocket.receive(udpPacket)
+                    val data = udpPacket.getData
+                    val s = new String(data, 0, udpPacket.getLength)
 
-            while (true) {
-                udpServerSocket.receive(udpPacket)
-                val data = udpPacket.getData
-                val s = new String(data, 0, udpPacket.getLength)
-
-                if (s == "motion detected") {
-                    m.update(MOTION_DETECTED)
-                } else {
-                    m.update(MOTION_NOT_DETECTED)
+                    if (s == "motion detected") {
+                        m.update(MOTION_DETECTED)
+                    } else {
+                        m.update(MOTION_NOT_DETECTED)
+                    }
                 }
+            } catch {
+                case e : Throwable => e.printStackTrace()
             }
         }
     })
@@ -67,24 +70,28 @@ object SmartRoom extends App {
 
     val controlLightRunnable = new Runnable() {
         def run() = {
-            val isRoomOccupied = m.getSnapshot.getValues.contains(MOTION_DETECTED)
-            println("room occupied: " + isRoomOccupied)
-            val roomStatus = exchange.isRoomAvailable(chosenRoom)
-            println("exchange room status: " + roomStatus)
+            try {
+                val isRoomOccupied = m.getSnapshot.getValues.contains(MOTION_DETECTED)
+                println("room occupied: " + isRoomOccupied)
+                val roomStatus = exchange.isRoomAvailable(chosenRoom)
+                println("exchange room status: " + roomStatus)
 
 
-            if (!isRoomOccupied && roomStatus == "free") {
-                println("trigger green light on smart bulb")
-                HueApi.updateLight(state = State.green)
-            } else if (isRoomOccupied && roomStatus == "free") {
-                println("trigger amber light on smart bulb")
-                HueApi.updateLight(state = State.yellow)
-            } else if (!isRoomOccupied && roomStatus != "free") {
-                println("trigger amber light on smart bulb")
-                HueApi.updateLight(state = State.yellow)
-            } else {
-                println("trigger red light on smart bulb")
-                HueApi.updateLight(state = State.red)
+                if (!isRoomOccupied && roomStatus == "free") {
+                    println("trigger green light on smart bulb")
+                    HueApi.updateLight(state = State.green)
+                } else if (isRoomOccupied && roomStatus == "free") {
+                    println("trigger amber light on smart bulb")
+                    HueApi.updateLight(state = State.yellow)
+                } else if (!isRoomOccupied && roomStatus != "free") {
+                    println("trigger amber light on smart bulb")
+                    HueApi.updateLight(state = State.yellow)
+                } else {
+                    println("trigger red light on smart bulb")
+                    HueApi.updateLight(state = State.red)
+                }
+            } catch {
+                case e: Throwable => e.printStackTrace()
             }
         }
     }
