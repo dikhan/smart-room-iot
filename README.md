@@ -5,5 +5,5 @@ python motionsensor.py
 # start server app
 room is identified by an email address. example: CONF_374@<domain>.com
 room, exchange user and password are obtained as input from console during startup
-sbt runMain smart.SmartRoom
+sbt runMain smartroom.SmartRoom
 
